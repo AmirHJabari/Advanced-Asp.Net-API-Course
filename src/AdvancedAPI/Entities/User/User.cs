@@ -40,12 +40,12 @@ namespace Entities
     public enum Gender
     {
         [Display(Name = "هیچکدام")]
-        None,
+        None = 0,
 
         [Display(Name = "زن")]
-        Female,
+        Female = 1,
 
         [Display(Name = "مرد")]
-        Male,
+        Male = 2,
     }
 }
