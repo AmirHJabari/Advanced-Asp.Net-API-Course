@@ -34,7 +34,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entity, nameof(entity));
             await Entities.AddAsync(entity, cancellationToken).ConfigureAwait(false);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -42,7 +42,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entities, nameof(entities));
             await Entities.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -50,7 +50,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entity, nameof(entity));
             Entities.Update(entity);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken);
         }
 
@@ -58,7 +58,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entities, nameof(entities));
             Entities.UpdateRange(entities);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken);
         }
 
@@ -66,7 +66,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entity, nameof(entity));
             Entities.Remove(entity);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken);
         }
 
@@ -74,7 +74,7 @@ namespace Data.Repositories
         {
             Assert.NotNull(entities, nameof(entities));
             Entities.RemoveRange(entities);
-            if (saveNow)
+            if (saveNow && !cancellationToken.IsCancellationRequested)
                 await DbContext.SaveChangesAsync(cancellationToken);
         }
         #endregion
