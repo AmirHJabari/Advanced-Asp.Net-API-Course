@@ -17,6 +17,12 @@ namespace WebFramework.API
             this.Data = default;
         }
 
+        public ApiResult(bool status) 
+            : base(status)
+        {
+            this.Data = default;
+        }
+
         public ApiResult(bool success, string message, TData data, ApiResultStatusCode code = ApiResultStatusCode.None)
            : base(success, message, code)
         {
@@ -71,16 +77,16 @@ namespace WebFramework.API
         //    return new ApiResult<TData>(false, ApiResultStatusCode.BadRequest, null);
         //}
 
-        public static implicit operator ApiResult<TData>(BadRequestObjectResult result)
-        {
-            var message = result.Value.ToString();
-            if (result.Value is SerializableError errors)
-            {
-                var errorMessages = errors.SelectMany(p => (string[])p.Value).Distinct();
-                message = string.Join(" | ", errorMessages);
-            }
-            return new ApiResult<TData>(false, message, default);
-        }
+        //public static implicit operator ApiResult<TData>(BadRequestObjectResult result)
+        //{
+        //    var message = result.Value.ToString();
+        //    if (result.Value is SerializableError errors)
+        //    {
+        //        var errorMessages = errors.SelectMany(p => (string[])p.Value).Distinct();
+        //        message = string.Join(" | ", errorMessages);
+        //    }
+        //    return new ApiResult<TData>(false, message, default);
+        //}
 
         //public static implicit operator ApiResult<TData>(ContentResult result)
         //{
@@ -104,6 +110,13 @@ namespace WebFramework.API
         public ApiResult()
             : this(true, "Operation was successful")
         { }
+
+        public ApiResult(bool status)
+        {
+            this.IsSuccess = status;
+            this.Message = status ? "Operation was successful" : "Operation was not successful";
+            this.Code = ApiResultStatusCode.None;
+        }
 
         public ApiResult(bool success, string message, ApiResultStatusCode code = ApiResultStatusCode.None)
         {
