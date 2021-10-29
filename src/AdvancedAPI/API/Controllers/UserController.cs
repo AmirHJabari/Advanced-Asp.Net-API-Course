@@ -68,7 +68,7 @@ namespace API.Controllers
             await _userRepository.AddAsync(user, userDto.Password, cancellationToken);
 
             var res = new ApiResult<object>()
-                .WithData(new { Id = user.Id });
+                .WithData(new { user.Id });
 
             return CreatedAtAction(nameof(Get), new { id = user.Id }, res);
         }
