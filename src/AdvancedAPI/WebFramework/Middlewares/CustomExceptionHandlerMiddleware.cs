@@ -54,7 +54,7 @@ namespace WebFramework.Middlewares
                 _logger.LogError(ex, ex.Message);
 
                 httpStatusCode = ex.HttpStatusCode;
-                apiStatusCode = (ApiResultStatusCode)ex.Code;
+                apiStatusCode = (ApiResultStatusCode)ex.ApiStatusCode;
                 message = ex.Message;
 
                 if (_env.IsDevelopment())

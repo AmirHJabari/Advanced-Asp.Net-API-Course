@@ -9,8 +9,8 @@ namespace Common.Exceptions
 {
     public class BadRequestException : AppException
     {
-        public BadRequestException(string message, int code = -1, HttpStatusCode httpStatusCode = HttpStatusCode.InternalServerError, object additionalData = null, Exception exception = null)
-            : base(message, code, httpStatusCode, additionalData, exception)
+        public BadRequestException(string message, int apiStatusCode = -1, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest, object additionalData = null, Exception exception = null)
+            : base(message, apiStatusCode, httpStatusCode, additionalData, exception)
         {
         }
     }
