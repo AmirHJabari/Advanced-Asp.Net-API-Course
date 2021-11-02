@@ -1,3 +1,6 @@
+using ElmahCore;
+using ElmahCore.Sql;
+using ElmahCore.Mvc;
 using Data;
 using Data.Repositories;
 using Microsoft.AspNetCore.Builder;
@@ -42,6 +45,12 @@ namespace API
             //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             //});
 
+            services.AddElmah<SqlErrorLog>(options =>
+            {
+                options.Path = "/logs/elmah";
+                options.ConnectionString = Configuration.GetConnectionString("Elmah");
+            });
+
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUserRepository, UserRepository>();
         }
@@ -58,11 +67,13 @@ namespace API
                 //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
             }
 
-            app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+            app.UseElmah();
 
             app.UseEndpoints(endpoints =>
             {
