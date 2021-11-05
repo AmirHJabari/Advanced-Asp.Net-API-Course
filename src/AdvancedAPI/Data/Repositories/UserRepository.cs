@@ -45,5 +45,11 @@ namespace Data.Repositories
         {
             return this.TableNoTracking.AnyAsync(u => u.Id == id, cancellationToken);
         }
+
+        public Task UpdateLastActivityDateAsync(User user, CancellationToken cancellationToken)
+        {
+            user.LastActivityDate = DateTimeOffset.UtcNow;
+            return this.UpdateAsync(user, cancellationToken);
+        }
     }
 }

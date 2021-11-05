@@ -36,7 +36,8 @@ namespace Entities
 
         public Guid SecurityStamp { get; set; }
 
-        public DateTimeOffset LastLogin { get; set; }
+        public DateTimeOffset LoginDate { get; set; }
+        public DateTimeOffset LastActivityDate { get; set; }
 
         public ICollection<Post> Posts { get; set; }
     }

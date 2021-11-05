@@ -11,5 +11,6 @@ namespace Data.Repositories
         Task<bool> IsUserNameExistAsync(string userName, CancellationToken cancellationToken);
         Task<bool> IsUserExistAsync(int id, CancellationToken cancellationToken);
         Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken);
+        Task UpdateLastActivityDateAsync(User user, CancellationToken cancellationToken);
     }
 }
