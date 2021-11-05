@@ -19,14 +19,19 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebFramework.Middlewares;
+using WebFramework.Configuration;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Common;
 
 namespace API
 {
     public class Startup
     {
+        private readonly SiteSettings _settings;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            _settings = configuration.GetSection(nameof(SiteSettings)).Get<SiteSettings>();
         }
 
         public IConfiguration Configuration { get; }
@@ -39,7 +44,10 @@ namespace API
                 options.UseSqlServer(Configuration.GetConnectionString("SqlServer"));
             });
 
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(new AuthorizeFilter());
+            });
             //services.AddSwaggerGen(c =>
             //{
             //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
@@ -47,12 +55,17 @@ namespace API
 
             services.AddElmah<SqlErrorLog>(options =>
             {
-                options.Path = "/logs/elmah";
+                options.Path = _settings.ElamahPath;
                 options.ConnectionString = Configuration.GetConnectionString("Elmah");
             });
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<Services.IJwtServices, Services.JwtServices>();
+
+            services.AddSingleton(this._settings);
+
+            services.AddJwtAuthentication(_settings.Jwt);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +79,6 @@ namespace API
                 //app.UseSwagger();
                 //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
             }
-
 
             app.UseRouting();
             app.UseHttpsRedirection();
