@@ -10,5 +10,6 @@ namespace WebFramework.API
     {
         None = -1,
         UserNameExist = 1,
+        WrongUsernameOrPassword = 2
     }
 }
