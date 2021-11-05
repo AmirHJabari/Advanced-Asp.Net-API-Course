@@ -124,7 +124,6 @@ namespace API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<ApiResult>> Token([Required] string username, [Required] string password, CancellationToken cancellationToken)
         {
-            throw new Exception();
             User user = await _userRepository.GetUserByUserNameAndPasswordAsync(username, password, cancellationToken);
             
             if (user is null)
