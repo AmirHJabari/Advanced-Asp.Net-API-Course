@@ -11,6 +11,7 @@ namespace Entities
     {
         public User()
         {
+            SecurityStamp = Guid.NewGuid();
             this.IsActive = true;
         }
 
@@ -32,6 +33,9 @@ namespace Entities
         public int Age { get; set; }
         public Gender Gender { get; set; }
         public bool IsActive { get; set; }
+
+        public Guid SecurityStamp { get; set; }
+
         public DateTimeOffset LastLogin { get; set; }
 
         public ICollection<Post> Posts { get; set; }

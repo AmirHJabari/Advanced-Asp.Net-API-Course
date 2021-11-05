@@ -10,5 +10,6 @@ namespace Data.Repositories
         Task AddAsync(User user, string password, CancellationToken cancellationToken, bool saveNow = true);
         Task<bool> IsUserNameExistAsync(string userName, CancellationToken cancellationToken);
         Task<bool> IsUserExistAsync(int id, CancellationToken cancellationToken);
+        Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken);
     }
 }

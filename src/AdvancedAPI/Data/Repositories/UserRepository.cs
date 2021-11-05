@@ -26,6 +26,12 @@ namespace Data.Repositories
             return this.TableNoTracking.AnyAsync(u => u.UserName == userName, cancellationToken);
         }
 
+        public Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
+        {
+            user.SecurityStamp = Guid.NewGuid();
+            return this.UpdateAsync(user, cancellationToken);
+        }
+
         public Task<User> GetUserByUserNameAndPasswordAsync(string userName, string password, CancellationToken cancellationToken)
         {
             string passwordHash = SecurityHelper.GetSha256Hash(password);
