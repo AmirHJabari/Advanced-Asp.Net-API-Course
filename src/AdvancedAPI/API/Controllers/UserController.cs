@@ -50,6 +50,7 @@ namespace API.Controllers
 
         [HttpGet("{id:int}")]
         [TryGetUserByIdValidation]
+        [Authorize(Roles = "Forbidden")] // for test
         public ActionResult<ApiResult<User>> Get(int id,
             [BindNever] User user)
         {
@@ -71,7 +72,8 @@ namespace API.Controllers
                 LastName = userDto.LastName,
                 Gender = userDto.Gender,
                 Age = userDto.Age,
-                LastLogin = DateTime.UtcNow,
+                LoginDate = DateTimeOffset.UtcNow,
+                LastActivityDate = DateTimeOffset.UtcNow,
                 IsActive = true,
             };
 
@@ -97,7 +99,7 @@ namespace API.Controllers
             user.Age = userDto.Age;
             user.Gender = userDto.Gender;
 
-            user.LastLogin = DateTime.UtcNow;
+            user.LastActivityDate = DateTimeOffset.UtcNow;
 
             await _userRepository.UpdateAsync(user, cancellationToken);
 
@@ -127,7 +129,7 @@ namespace API.Controllers
             User user = await _userRepository.GetUserByUserNameAndPasswordAsync(username, password, cancellationToken);
             
             if (user is null)
-                return BadRequest(new ApiResult(false, "UserName or Password is invalid.", ApiResultStatusCode.WrongUsernameOrPassword));
+                return Unauthorized(new ApiResult(false, "UserName or password is invalid.", ApiResultStatusCode.WrongUsernameOrPassword));
             else
             {
                 return Ok(new ApiResult<object>()

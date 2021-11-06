@@ -85,6 +85,7 @@ namespace WebFramework.Middlewares
                 SetUnAuthorizeResponse(exception);
                 await WriteToResponseAsync();
             }
+            //catch (InvalidOperationException) { } // System.InvalidOperationException: StatusCode cannot be set because the response has already started.
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
