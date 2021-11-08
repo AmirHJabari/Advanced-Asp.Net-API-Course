@@ -4,23 +4,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Entities
 {
-    public class User : BaseEntity<int>
+    public class User : IdentityUser<int>, IEntity
     {
         public User()
         {
-            SecurityStamp = Guid.NewGuid();
             this.IsActive = true;
         }
-
-        [Required]
-        [StringLength(50)]
-        public string UserName { get; set; }
-        [Required]
-        [StringLength(100)]
-        public string PasswordHash { get; set; }
 
         [Required]
         [StringLength(50)]
@@ -34,12 +29,25 @@ namespace Entities
         public Gender Gender { get; set; }
         public bool IsActive { get; set; }
 
-        public Guid SecurityStamp { get; set; }
-
         public DateTimeOffset LoginDate { get; set; }
         public DateTimeOffset LastActivityDate { get; set; }
 
         public ICollection<Post> Posts { get; set; }
+    }
+
+    public class UserConfiguration : IEntityTypeConfiguration<User>
+    {
+        public void Configure(EntityTypeBuilder<User> builder)
+        {
+            // UserName
+            builder.Property(p => p.UserName)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            // PasswordHash
+            builder.Property(p => p.PasswordHash)
+                .IsRequired();
+        }
     }
 
     public enum Gender

@@ -1,5 +1,6 @@
 ﻿using Common.Utilities;
 using Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -18,8 +19,9 @@ namespace Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var entitiesAssembly = typeof(IEntity).Assembly;
+            base.OnModelCreating(modelBuilder);
 
+            var entitiesAssembly = typeof(IEntity).Assembly;
 
             // modelBuilder.RegisterEntityTypeConfiguration(entitiesAssembly); // my old method
             modelBuilder.ApplyConfigurationsFromAssembly(entitiesAssembly);
@@ -27,8 +29,6 @@ namespace Data
             modelBuilder.AddRestrictDeleteBehaviorConvention();
             modelBuilder.AddSequentialGuidForIdConvention();
             modelBuilder.AddPluralizingTableNameConvention();
-
-            base.OnModelCreating(modelBuilder);
         }
 
         private void CleanString()
