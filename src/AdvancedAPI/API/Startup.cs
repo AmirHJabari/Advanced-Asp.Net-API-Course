@@ -66,6 +66,7 @@ namespace API
             services.AddSingleton(this._settings);
 
             services.AddJwtAuthentication(_settings.Jwt);
+            services.AddCustomIdentity(_settings.Identity);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

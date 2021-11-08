@@ -16,6 +16,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Common.Utilities;
 using Microsoft.AspNetCore.Http;
+using Entities;
+using Data;
 
 namespace WebFramework.Configuration
 {
@@ -147,6 +149,32 @@ namespace WebFramework.Configuration
                         }
                     };
                 });
+
+            return services;
+        }
+
+        public static IServiceCollection AddCustomIdentity(this IServiceCollection services, IdentitySettings settings)
+        {
+            services.AddIdentity<User, Role>(options =>
+            {
+                // Password
+                options.Password.RequireDigit = settings.PasswordRequireDigit;
+                options.Password.RequiredLength = settings.PasswordRequiredLength;
+                options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanume;
+                options.Password.RequireUppercase = settings.PasswordRequireUppercase;
+                options.Password.RequireLowercase = settings.PasswordRequireLowercase;
+                options.Password.RequiredUniqueChars = settings.PasswordRequiredUniqueChars;
+
+                // Lockout
+                options.Lockout.AllowedForNewUsers = settings.LockoutAllowedForNewUsers;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(settings.DefaultLockoutMinutes);
+                options.Lockout.MaxFailedAccessAttempts = settings.LockoutMaxFailedAccessAttempts;
+
+                // User
+                options.User.RequireUniqueEmail = settings.UserRequireUniqueEmail;
+                options.User.AllowedUserNameCharacters = settings.AllowedUserNameCharacters;
+            }).AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
             return services;
         }

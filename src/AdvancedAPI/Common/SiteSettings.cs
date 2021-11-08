@@ -12,5 +12,7 @@ namespace Common
         public string ElamahPath { get; set; }
 
         public JwtSettings Jwt { get; set; }
+
+        public IdentitySettings Identity { get; set; }
     }
 }
