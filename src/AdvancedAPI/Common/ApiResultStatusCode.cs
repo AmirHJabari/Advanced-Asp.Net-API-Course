@@ -11,7 +11,7 @@ namespace Common
         None = -1,
 
         // 1xx Authentication error
-        WrongUsernameOrPassword = 100,
+        WrongUserNameOrPassword = 100,
         WeakPassword = 101,
 
         // 2xx Authorization error
@@ -23,7 +23,8 @@ namespace Common
         AccountRestricted = 205,
 
         // 3xx Generic error
-        UserNameExist = 300,
-        InvalidInputs = 301
+        InvalidInputs = 300,
+        DuplicateUserName = 301,
+        DuplicateEmail = 302,
     }
 }

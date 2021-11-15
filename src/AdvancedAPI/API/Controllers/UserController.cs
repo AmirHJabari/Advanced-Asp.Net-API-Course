@@ -1,7 +1,10 @@
-﻿using Common.Utilities;
+﻿using Common;
+using Common.Utilities;
 using Data.Repositories;
 using Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
@@ -24,28 +27,32 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiResultFilter]
     public class UserController : ControllerBase
     {
         private IUserRepository _userRepository;
         private readonly IJwtServices _jwtServices;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly RoleManager<Role> _roleManager;
 
-        public UserController(IUserRepository userRepository, Services.IJwtServices jwtServices)
+        public UserController(IUserRepository userRepository, Services.IJwtServices jwtServices,
+            UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<Role> roleManager)
         {
             this._userRepository = userRepository;
             this._jwtServices = jwtServices;
+            this._userManager = userManager;
+            this._signInManager = signInManager;
+            this._roleManager = roleManager;
         }
-
+        
         [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<ApiResult<IEnumerable<User>>> Get(CancellationToken cancellationToken)
+        public async Task<ActionResult<ApiResult<IEnumerable<User>>>> Get(CancellationToken cancellationToken)
         {
-            var userName = this.User.FindFirstValue(ClaimTypes.Name);
-            var role = this.User.FindAll(ClaimTypes.Role);
-
             var users = await _userRepository.TableNoTracking.ToListAsync(cancellationToken);
 
-            return new ApiResult<IEnumerable<User>>()
-                .WithData(users);
+            return Ok(new ApiResult<IEnumerable<User>>()
+                                .WithData(users));
         }
 
         [HttpGet("{id:int}")]
@@ -61,7 +68,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [UserNameIsExistValidation]
+        //[UserNameIsExistValidation]
         public async Task<ActionResult<ApiResult>> Post([FromBody] UserDto userDto,
             CancellationToken cancellationToken)
         {
@@ -70,6 +77,7 @@ namespace API.Controllers
                 UserName = userDto.UserName,
                 FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
+                Email = userDto.Email,
                 Gender = userDto.Gender,
                 Age = userDto.Age,
                 LoginDate = DateTimeOffset.UtcNow,
@@ -77,7 +85,21 @@ namespace API.Controllers
                 IsActive = true,
             };
 
-            await _userRepository.AddAsync(user, userDto.Password, cancellationToken);
+            var result = await _userManager.CreateAsync(user, userDto.Password);
+
+            if (!result.Succeeded)
+            {
+                var code = result.GetStatusCode();
+                string message = result.GetErrorMessages();
+
+                return BadRequest(
+                    new ApiResult(result.Succeeded)
+                        .WithMessage(message)
+                        //.WithCode(ApiResultStatusCode.InvalidInputs)
+                        .WithCode(code)
+                        //.WithData(result.Errors)
+                );
+            }
 
             var res = new ApiResult<object>()
                 .WithData(new { user.Id });
@@ -110,7 +132,7 @@ namespace API.Controllers
 
         [HttpDelete("{id:int}")]
         [TryGetUserByIdValidation]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<ApiResult>> Delete(int id, CancellationToken cancellationToken,
             [BindNever] User user)
         {
@@ -123,17 +145,16 @@ namespace API.Controllers
         }
 
         [HttpGet("[action]")]
-        [AllowAnonymous]
         public async Task<ActionResult<ApiResult>> Token([Required] string username, [Required] string password, CancellationToken cancellationToken)
         {
-            User user = await _userRepository.GetUserByUserNameAndPasswordAsync(username, password, cancellationToken);
-            
-            if (user is null)
-                return Unauthorized(new ApiResult(false, "UserName or password is invalid.", ApiResultStatusCode.WrongUsernameOrPassword));
+            User user = await _userManager.FindByNameAsync(username);
+
+            if (user is null || !(await _userManager.CheckPasswordAsync(user, password)))
+                return Unauthorized(new ApiResult(false, "UserName or password is invalid.", ApiResultStatusCode.WrongUserNameOrPassword));
             else
             {
                 return Ok(new ApiResult<object>()
-                    .WithData(new { Token = _jwtServices.Generate(user) }));
+                    .WithData(new { Token = await _jwtServices.GenerateAsync(user) }));
             }
         }
     }

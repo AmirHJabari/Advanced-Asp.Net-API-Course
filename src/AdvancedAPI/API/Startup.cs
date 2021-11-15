@@ -46,7 +46,7 @@ namespace API
 
             services.AddControllers(options =>
             {
-                options.Filters.Add(new AuthorizeFilter());
+                // options.Filters.Add(new AuthorizeFilter());
             });
             //services.AddSwaggerGen(c =>
             //{
@@ -65,8 +65,8 @@ namespace API
 
             services.AddSingleton(this._settings);
 
-            services.AddJwtAuthentication(_settings.Jwt);
             services.AddCustomIdentity(_settings.Identity);
+            services.AddJwtAuthentication(_settings.Jwt);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

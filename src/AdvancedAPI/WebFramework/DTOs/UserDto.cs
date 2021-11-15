@@ -36,6 +36,7 @@ namespace WebFramework.DTOs
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             this.UserName = this.UserName.Trim().ToLower();
+            this.Email = this.Email.Trim().ToLower();
 
             if (UserName.Equals("test", StringComparison.OrdinalIgnoreCase))
                 yield return new ValidationResult("UserName can not be 'test'", new[] { nameof(UserName) });

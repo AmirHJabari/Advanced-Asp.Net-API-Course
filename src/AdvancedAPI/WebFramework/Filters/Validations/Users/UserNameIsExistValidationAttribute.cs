@@ -51,7 +51,7 @@ namespace WebFramework.Filters.Validations.Users
                     var badRes = new ApiResult()
                         .WithMessage($"UserName '{userName}' already exist")
                         .WithStatus(false)
-                        .WithCode(ApiResultStatusCode.UserNameExist);
+                        .WithCode(ApiResultStatusCode.DuplicateUserName);
                     
                     context.Result = new BadRequestObjectResult(badRes);
                 }

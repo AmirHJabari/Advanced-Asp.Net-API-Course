@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Common;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
@@ -24,89 +25,44 @@ namespace WebFramework.Filters
     /// </summary>
     public class ApiResultFilterAttribute : ActionFilterAttribute
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
-            Console.WriteLine("OnActionExecuted");
-            base.OnActionExecuted(context);
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            Console.WriteLine("OnActionExecuting");
-            base.OnActionExecuting(context);
-        }
-
-        public override Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            Console.WriteLine("OnActionExecutionAsync");
-            return base.OnActionExecutionAsync(context, next);
-        }
-
-        public override void OnResultExecuted(ResultExecutedContext context)
-        {
-            Console.WriteLine("OnResultExecuted");
-            base.OnResultExecuted(context);
-        }
-
         public override void OnResultExecuting(ResultExecutingContext context)
         {
-            Console.WriteLine("OnResultExecuting");
+            switch (context.Result)
+            {
+                case StatusCodeResult result when result.StatusCode is not 204:
+                    {
+                        bool success = result.StatusCode < 400;
 
-            if (context.Result is OkObjectResult okObjectResult)
-            {
-                var apiResult = new ApiResult<object>().WithData(okObjectResult.Value);
-                context.Result = new JsonResult(apiResult) { StatusCode = okObjectResult.StatusCode };
-            }
-            else if (context.Result is OkResult okResult)
-            {
-                var apiResult = new ApiResult();
-                context.Result = new JsonResult(apiResult) { StatusCode = okResult.StatusCode };
-            }
-            else if (context.Result is BadRequestResult badRequestResult)
-            {
-                var apiResult = new ApiResult(false);
-                context.Result = new JsonResult(apiResult) { StatusCode = badRequestResult.StatusCode };
-            }
-            else if (context.Result is BadRequestObjectResult badRequestObjectResult)
-            {
-                var message = badRequestObjectResult.Value.ToString();
-                if (badRequestObjectResult.Value is SerializableError errors)
-                {
-                    var errorMessages = errors.SelectMany(p => (string[])p.Value).Distinct();
-                    message = string.Join(" | ", errorMessages);
-                }
-                var apiResult = new ApiResult(false, message);
-                context.Result = new JsonResult(apiResult) { StatusCode = badRequestObjectResult.StatusCode };
-            }
-            else if (context.Result is ContentResult contentResult)
-            {
-                var apiResult = new ApiResult().WithMessage(contentResult.Content);
-                context.Result = new JsonResult(apiResult) { StatusCode = contentResult.StatusCode };
-            }
-            else if (context.Result is NotFoundResult notFoundResult)
-            {
-                var apiResult = new ApiResult(false);
-                context.Result = new JsonResult(apiResult) { StatusCode = notFoundResult.StatusCode };
-            }
-            else if (context.Result is NotFoundObjectResult notFoundObjectResult)
-            {
-                var apiResult = new ApiResult<object>(false).WithData(notFoundObjectResult.Value);
-                context.Result = new JsonResult(apiResult) { StatusCode = notFoundObjectResult.StatusCode };
-            }
-            else if (context.Result is ObjectResult objectResult && objectResult.StatusCode == null
-                && !(objectResult.Value is ApiResult))
-            {
-                var apiResult = new ApiResult<object>().WithData(objectResult.Value);
-                context.Result = new JsonResult(apiResult) { StatusCode = objectResult.StatusCode };
+                        var apiResult = new ApiResult(success);
+                        context.Result = new JsonResult(apiResult) { StatusCode = result.StatusCode };
+                        break;
+                    }
+
+                case ObjectResult result
+                        when result.StatusCode is not null && result.Value is not ApiResult:
+                    {
+                        if (result.Value is ValidationProblemDetails validationProblem)
+                        {
+                            var errorMessages = validationProblem.Errors.SelectMany(p => p.Value).Distinct();
+                            string message = string.Join(" | ", errorMessages);
+                            var apiResult = new ApiResult(false, message, ApiResultStatusCode.InvalidInputs);
+                            context.Result = new JsonResult(apiResult) { StatusCode = result.StatusCode };
+                        }
+                        else
+                        {
+                            bool success = result.StatusCode < 400;
+                            var apiResult = new ApiResult<object>(success);
+
+                            if (result.Value is not ProblemDetails)
+                                apiResult.WithData(result.Value);
+
+                            context.Result = new JsonResult(apiResult) { StatusCode = result.StatusCode };
+                        }
+                        break;
+                    }
             }
 
             base.OnResultExecuting(context);
-        }
-
-        public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
-        {
-            Console.WriteLine("OnResultExecutionAsync");
-            return base.OnResultExecutionAsync(context, next);
         }
     }
 }

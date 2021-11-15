@@ -45,7 +45,7 @@ namespace WebFramework.API
             return this;
         }
 
-        public override ApiResult WithCode(ApiResultStatusCode code)
+        public override ApiResult<TData> WithCode(ApiResultStatusCode code)
         {
             this.Code = code;
             return this;
