@@ -29,7 +29,7 @@ namespace WebFramework.API
             this.Data = data;
         }
 
-        // [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public TData Data { get; set; }
 
         public override ApiResult<TData> WithStatus(bool success = true)

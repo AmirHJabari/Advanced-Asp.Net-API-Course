@@ -39,6 +39,9 @@ namespace Entities
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            builder.HasIndex(u => u.UserName).IsUnique();
+            builder.HasIndex(u => u.NormalizedUserName).IsUnique();
+            
             // UserName
             builder.Property(p => p.UserName)
                 .IsRequired()

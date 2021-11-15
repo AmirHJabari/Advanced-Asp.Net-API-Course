@@ -12,6 +12,12 @@ namespace WebFramework.DTOs
         [Required]
         [StringLength(50)]
         public string UserName { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        [EmailAddress]
+        public string Email { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Password { get; set; }
@@ -35,7 +41,7 @@ namespace WebFramework.DTOs
                 yield return new ValidationResult("UserName can not be 'test'", new[] { nameof(UserName) });
 
             if (Password.Equals("123456"))
-                yield return new ValidationResult("Password can not be '123456'", new[] { nameof(Password) });
+                yield return new ValidationResult($"Password can not be {Password}", new[] { nameof(Password) });
 
             if (Gender == Gender.Male && Age > 30)
                 yield return new ValidationResult("Men older than 30 years are not allowed", new[] { nameof(Gender), nameof(Age) });
