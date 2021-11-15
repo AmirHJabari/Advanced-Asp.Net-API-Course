@@ -7,10 +7,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utilities;
+using Common.DI;
 
 namespace Data.Repositories
 {
-    public class UserRepository : Repository<User>, IUserRepository
+    public class UserRepository : Repository<User>, IUserRepository, IScopedDependency
     {
         public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
         { }

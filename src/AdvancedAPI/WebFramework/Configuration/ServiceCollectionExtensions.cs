@@ -18,11 +18,46 @@ using Common.Utilities;
 using Microsoft.AspNetCore.Http;
 using Entities;
 using Data;
+using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
+using ElmahCore.Mvc;
+using ElmahCore.Sql;
 
 namespace WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection AddApplicationDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("SqlServer"));
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddCustomElmah(this IServiceCollection services, string path, IConfiguration configuration)
+        {
+            services.AddElmah<SqlErrorLog>(options =>
+            {
+                options.Path = path;
+                options.ConnectionString = configuration.GetConnectionString("Elmah");
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddMinimalControllers(this IServiceCollection services)
+        {
+            services.AddControllers(options =>
+            {
+                // options.Filters.Add(new AuthorizeFilter());
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings settings)
         {
             services.AddAuthentication(options =>

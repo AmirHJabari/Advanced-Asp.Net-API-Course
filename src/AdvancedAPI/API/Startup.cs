@@ -22,6 +22,8 @@ using WebFramework.Middlewares;
 using WebFramework.Configuration;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Common;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 
 namespace API
 {
@@ -35,38 +37,33 @@ namespace API
         }
 
         public IConfiguration Configuration { get; }
+        public ILifetimeScope AutofacContainer { get; private set; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("SqlServer"));
-            });
+            services.AddApplicationDbContext(Configuration);
+            services.AddMinimalControllers();
 
-            services.AddControllers(options =>
-            {
-                // options.Filters.Add(new AuthorizeFilter());
-            });
             //services.AddSwaggerGen(c =>
             //{
             //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             //});
-
-            services.AddElmah<SqlErrorLog>(options =>
-            {
-                options.Path = _settings.ElamahPath;
-                options.ConnectionString = Configuration.GetConnectionString("Elmah");
-            });
-
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<Services.IJwtServices, Services.JwtServices>();
+            services.AddCustomElmah(_settings.ElamahPath, Configuration);
 
             services.AddSingleton(this._settings);
 
             services.AddCustomIdentity(_settings.Identity);
             services.AddJwtAuthentication(_settings.Jwt);
+        }
+
+        /// <summary>
+        /// ConfigureContainer is where you can register things directly with Autofac.
+        /// This runs after <see cref="ConfigureServices"/> so the things here will override registrations made in <see cref="ConfigureServices"/>.
+        /// Don't build the container; that gets done for you by the factory.
+        /// </summary>
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            builder.AddServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -9,10 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Common;
 using Microsoft.AspNetCore.Identity;
+using Common.DI;
 
 namespace Services
 {
-    public class JwtServices : IJwtServices
+    public class JwtServices : IJwtServices, IScopedDependency
     {
         private readonly SiteSettings _siteSettings;
         private readonly SignInManager<User> _signInManager;
