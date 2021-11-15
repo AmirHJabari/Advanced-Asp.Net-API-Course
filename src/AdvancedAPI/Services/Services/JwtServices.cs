@@ -15,13 +15,15 @@ namespace Services
     public class JwtServices : IJwtServices
     {
         private readonly SiteSettings _siteSettings;
+        private readonly SignInManager<User> _signInManager;
 
-        public JwtServices(SiteSettings siteSettings)
+        public JwtServices(SiteSettings siteSettings, SignInManager<User> signInManager)
         {
             this._siteSettings = siteSettings;
+            this._signInManager = signInManager;
         }
 
-        public string Generate(User user)
+        public async Task<string> GenerateAsync(User user)
         {
             var secretKey = Encoding.UTF8.GetBytes(_siteSettings.Jwt.SecretKey);
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
@@ -29,7 +31,7 @@ namespace Services
             var encriptionKey = Encoding.UTF8.GetBytes(_siteSettings.Jwt.EncriptKey);
             var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encriptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
 
-            var claims = this.GetClaims(user);
+            var claims = await this.GetClaimsAsync(user);
 
             var descriptor = new SecurityTokenDescriptor()
             {
@@ -53,23 +55,30 @@ namespace Services
             return tokenHandler.WriteToken(securityToken);
         }
 
-        public IEnumerable<Claim> GetClaims(User user)
+        public async Task<IEnumerable<Claim>> GetClaimsAsync(User user)
         {
-            var securityStampClaimType = new ClaimsIdentityOptions().SecurityStampClaimType;
-            yield return new Claim(ClaimTypes.Name, user.UserName);
-            yield return new Claim(ClaimTypes.NameIdentifier, user.Id.ToString());
+            var claims = await _signInManager.ClaimsFactory.CreateAsync(user);
 
-            var roles = new List<Role>()
-            {
-                new Role() {Name = "Admin"},
-                new Role() {Name = "Reader"},
-                new Role() {Name = "Writer"},
-            };
+            // Add more claims
 
-            foreach (var role in roles)
-                yield return new Claim(ClaimTypes.Role, role.Name);
+            return claims.Claims;
 
-            yield return new Claim(securityStampClaimType, user.SecurityStamp.ToString());
+            //var securityStampClaimType = new ClaimsIdentityOptions().SecurityStampClaimType;
+
+            //yield return new Claim(ClaimTypes.Name, user.UserName);
+            //yield return new Claim(ClaimTypes.NameIdentifier, user.Id.ToString());
+
+            //var roles = new List<Role>()
+            //{
+            //    new Role() {Name = "Admin"},
+            //    new Role() {Name = "Reader"},
+            //    new Role() {Name = "Writer"},
+            //};
+
+            //foreach (var role in roles)
+            //    yield return new Claim(ClaimTypes.Role, role.Name);
+
+            //yield return new Claim(securityStampClaimType, user.SecurityStamp.ToString());
         }
     }
 }
