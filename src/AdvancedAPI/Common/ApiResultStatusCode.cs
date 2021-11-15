@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebFramework.API
+namespace Common
 {
     public enum ApiResultStatusCode
     {
@@ -12,6 +12,7 @@ namespace WebFramework.API
 
         // 1xx Authentication error
         WrongUsernameOrPassword = 100,
+        WeakPassword = 101,
 
         // 2xx Authorization error
         InvalidToken = 200,
@@ -23,5 +24,6 @@ namespace WebFramework.API
 
         // 3xx Generic error
         UserNameExist = 300,
+        InvalidInputs = 301
     }
 }

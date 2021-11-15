@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebFramework.API;
 using WebFramework.DTOs;
+using Common;
 
 namespace WebFramework.Filters.Validations.Users
 {

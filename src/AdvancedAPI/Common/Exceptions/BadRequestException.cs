@@ -9,7 +9,7 @@ namespace Common.Exceptions
 {
     public class BadRequestException : AppException
     {
-        public BadRequestException(string message, int apiStatusCode = -1, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest, object additionalData = null, Exception exception = null)
+        public BadRequestException(string message, ApiResultStatusCode apiStatusCode = ApiResultStatusCode.None, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest, object additionalData = null, Exception exception = null)
             : base(message, apiStatusCode, httpStatusCode, additionalData, exception)
         {
         }

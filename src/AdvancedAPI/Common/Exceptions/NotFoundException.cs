@@ -9,7 +9,7 @@ namespace Common.Exceptions
 {
     public class NotFoundException : AppException
     {
-        public NotFoundException(string message, int apiStatusCode = -1, HttpStatusCode httpStatusCode = HttpStatusCode.NotFound, object additionalData = null, Exception exception = null)
+        public NotFoundException(string message, ApiResultStatusCode apiStatusCode = ApiResultStatusCode.None, HttpStatusCode httpStatusCode = HttpStatusCode.NotFound, object additionalData = null, Exception exception = null)
             : base(message, apiStatusCode, httpStatusCode, additionalData, exception)
         {
         }

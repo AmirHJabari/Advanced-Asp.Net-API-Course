@@ -9,7 +9,7 @@ namespace Common.Exceptions
 {
     public class LogicException : AppException
     {
-        public LogicException(string message, int apiStatusCode = -1, HttpStatusCode httpStatusCode = HttpStatusCode.InternalServerError, object additionalData = null, Exception exception = null) 
+        public LogicException(string message, ApiResultStatusCode apiStatusCode = ApiResultStatusCode.None, HttpStatusCode httpStatusCode = HttpStatusCode.InternalServerError, object additionalData = null, Exception exception = null) 
             : base(message, apiStatusCode, httpStatusCode, additionalData, exception)
         {
         }

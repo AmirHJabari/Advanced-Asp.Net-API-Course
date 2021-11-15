@@ -13,6 +13,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using WebFramework.API;
+using Common;
 
 namespace WebFramework.Middlewares
 {
@@ -90,7 +91,7 @@ namespace WebFramework.Middlewares
             {
                 _logger.LogError(ex, ex.Message);
 
-                message = ex.Message;
+                message = "Something went wrong.";
                 if (_env.IsDevelopment())
                 {
                     var dic = ToDic(ex);

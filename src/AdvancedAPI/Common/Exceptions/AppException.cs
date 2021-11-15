@@ -10,11 +10,11 @@ namespace Common.Exceptions
     public class AppException : Exception
     {
         public HttpStatusCode HttpStatusCode { get; set; }
-        public int ApiStatusCode { get; set; }
+        public ApiResultStatusCode ApiStatusCode { get; set; }
         public object AdditionalData { get; set; }
         
         public AppException(string message,
-            int apiStatusCode = -1,
+            ApiResultStatusCode apiStatusCode = ApiResultStatusCode.None,
             HttpStatusCode httpStatusCode = HttpStatusCode.InternalServerError,
             object additionalData = null,
             Exception exception = null)
