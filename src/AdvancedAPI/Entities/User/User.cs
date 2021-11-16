@@ -14,6 +14,8 @@ namespace Entities
     {
         public User()
         {
+            this.LoginDate = DateTimeOffset.UtcNow;
+            this.LastActivityDate = DateTimeOffset.UtcNow;
             this.IsActive = true;
         }
 
@@ -55,13 +57,8 @@ namespace Entities
 
     public enum Gender
     {
-        [Display(Name = "هیچکدام")]
         None = 0,
-
-        [Display(Name = "زن")]
         Female = 1,
-
-        [Display(Name = "مرد")]
         Male = 2,
     }
 }

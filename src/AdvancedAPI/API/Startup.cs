@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Common;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AutoMapper;
 
 namespace API
 {
@@ -43,6 +44,8 @@ namespace API
         {
             services.AddApplicationDbContext(Configuration);
             services.AddMinimalControllers();
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             //services.AddSwaggerGen(c =>
             //{

@@ -9,6 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using WebFramework.API;
 using Microsoft.AspNetCore.Mvc;
 using Entities;
+using AutoMapper.QueryableExtensions;
+using AutoMapper;
+using WebFramework.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebFramework.Filters.Validations.Users
 {
@@ -19,17 +23,41 @@ namespace WebFramework.Filters.Validations.Users
     /// </summary>
     public class TryGetUserByIdValidationAttribute : ActionFilterAttribute
     {
+        /// <summary>
+        /// The name of the action argument to get user id.
+        /// </summary>
         public string UserIdArgumentName { get; set; } = "id";
+
+        /// <summary>
+        /// The name of the action argument to pass the user.
+        /// </summary>
         public string UserArgumentName { get; set; } = "user";
+
+        /// <summary>
+        /// If true Initializes the user argument of action using <see cref="UserArgumentName"/> as <see cref="UserReadDto"/>.
+        /// <see cref="User"/> otherwise.
+        /// </summary>
+        public bool GetAsUserReadDto { get; set; } = false;
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var cancellationToken = context.HttpContext.RequestAborted;
 
             var userRepository = context.HttpContext.RequestServices.GetService<IUserRepository>();
-            var userId = context.ActionArguments[UserIdArgumentName];
+            var userId = (int) context.ActionArguments[UserIdArgumentName];
 
-            var user = await userRepository.GetByIdAsync(cancellationToken, (int)userId);
+            object user;
+
+            if (GetAsUserReadDto)
+            {
+                var mapper = context.HttpContext.RequestServices.GetService<IMapper>();
+                user = await userRepository.TableNoTracking.ProjectTo<UserReadDto>(mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+            }
+            else
+            {
+                user = await userRepository.GetByIdAsync(cancellationToken, userId);
+            }
 
             if (user is null)
             {

@@ -1,4 +1,6 @@
-﻿using Common;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Common;
 using Common.Utilities;
 using Data.Repositories;
 using Entities;
@@ -21,8 +23,6 @@ using WebFramework.DTOs;
 using WebFramework.Filters;
 using WebFramework.Filters.Validations.Users;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -35,56 +35,49 @@ namespace API.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
 
         public UserController(IUserRepository userRepository, Services.IJwtServices jwtServices,
-            UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<Role> roleManager)
+            UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<Role> roleManager,
+            IMapper mapper)
         {
             this._userRepository = userRepository;
             this._jwtServices = jwtServices;
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._roleManager = roleManager;
+            this._mapper = mapper;
         }
         
         [HttpGet]
-        public async Task<ActionResult<ApiResult<IEnumerable<User>>>> Get(CancellationToken cancellationToken)
+        public async Task<ActionResult<ApiResult<IEnumerable<UserReadDto>>>> Get(CancellationToken cancellationToken)
         {
-            var users = await _userRepository.TableNoTracking.ToListAsync(cancellationToken);
+            var users = await _userRepository.TableNoTracking.ProjectTo<UserReadDto>(_mapper.ConfigurationProvider)
+                .ToListAsync(cancellationToken);
 
-            return Ok(new ApiResult<IEnumerable<User>>()
+            return Ok(new ApiResult<IEnumerable<UserReadDto>>()
                                 .WithData(users));
         }
 
         [HttpGet("{id:int}")]
-        [TryGetUserByIdValidation]
-        [Authorize(Roles = "Forbidden")] // for test
+        [TryGetUserByIdValidation(GetAsUserReadDto = true, UserArgumentName = "userDto")]
+        // [Authorize(Roles = "Forbidden")] // for test
         public ActionResult<ApiResult<User>> Get(int id,
-            [BindNever] User user)
+            [BindNever] UserReadDto userDto)
         {
-            var res = new ApiResult<User>()
-                .WithData(user);
+            var res = new ApiResult<UserReadDto>()
+                .WithData(userDto);
             
             return Ok(res);
         }
 
         [HttpPost]
         //[UserNameIsExistValidation]
-        public async Task<ActionResult<ApiResult>> Post([FromBody] UserDto userDto,
+        public async Task<ActionResult<ApiResult>> Post([FromBody] UserCreateDto userDto,
             CancellationToken cancellationToken)
         {
-            var user = new User()
-            {
-                UserName = userDto.UserName,
-                FirstName = userDto.FirstName,
-                LastName = userDto.LastName,
-                Email = userDto.Email,
-                Gender = userDto.Gender,
-                Age = userDto.Age,
-                LoginDate = DateTimeOffset.UtcNow,
-                LastActivityDate = DateTimeOffset.UtcNow,
-                IsActive = true,
-            };
-
+            var user = _mapper.Map<User>(userDto);
+            
             var result = await _userManager.CreateAsync(user, userDto.Password);
 
             if (!result.Succeeded)
@@ -95,8 +88,8 @@ namespace API.Controllers
                 return BadRequest(
                     new ApiResult(result.Succeeded)
                         .WithMessage(message)
-                        //.WithCode(ApiResultStatusCode.InvalidInputs)
                         .WithCode(code)
+                        //.WithCode(ApiResultStatusCode.InvalidInputs)
                         //.WithData(result.Errors)
                 );
             }
@@ -111,22 +104,28 @@ namespace API.Controllers
         // [UserNameIsExistValidation]
         [TryGetUserByIdValidation]
         public async Task<ActionResult<ApiResult>> Put(int id,
-            UserDto userDto, CancellationToken cancellationToken,
+            UserUpdateDto userDto,
             [FromRoute][BindNever] User user)
         {
-            user.UserName = userDto.UserName;
-            user.PasswordHash = SecurityHelper.GetSha256Hash(userDto.Password);
-            user.FirstName = userDto.FirstName;
-            user.LastName = userDto.LastName;
-            user.Age = userDto.Age;
-            user.Gender = userDto.Gender;
+            _mapper.Map(userDto, user);
 
-            user.LastActivityDate = DateTimeOffset.UtcNow;
+            var result = await _userManager.UpdateAsync(user);
 
-            await _userRepository.UpdateAsync(user, cancellationToken);
+            if (!result.Succeeded)
+            {
+                var code = result.GetStatusCode();
+                string message = result.GetErrorMessages();
+
+                return BadRequest(
+                    new ApiResult(result.Succeeded)
+                        .WithMessage(message)
+                        .WithCode(code)
+                        //.WithCode(ApiResultStatusCode.InvalidInputs)
+                        //.WithData(result.Errors)
+                );
+            }
 
             var res = new ApiResult();
-
             return Ok(res);
         }
 
@@ -145,7 +144,7 @@ namespace API.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult<ApiResult>> Token([Required] string username, [Required] string password, CancellationToken cancellationToken)
+        public async Task<ActionResult<ApiResult>> Token([Required] string username, [Required] string password)
         {
             User user = await _userManager.FindByNameAsync(username);
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebFramework.DTOs
 {
-    public class UserDto : IValidatableObject
+    public class UserCreateDto : IValidatableObject
     {
         [Required]
         [StringLength(50)]
