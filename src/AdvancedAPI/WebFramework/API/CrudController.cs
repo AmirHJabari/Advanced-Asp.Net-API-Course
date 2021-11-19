@@ -18,8 +18,7 @@ namespace WebFramework.API
     /// A generic CRUD controller.
     /// </summary>
     /// <remarks>
-    /// Don't use it for entities with Foreign Keys 
-    /// or override and handle <see cref="Create(TCreateDto, CancellationToken)"/> and <see cref="Update(TKey, TUpdateDto, CancellationToken)"/> actions.
+    /// Don't use it for entities with Foreign Keys or override and handle actions if it is required.
     /// </remarks>
     /// <typeparam name="TCreateDto">The DTO for creating entity.</typeparam>
     /// <typeparam name="TReadDto">The DTO for reading entity.</typeparam>
@@ -32,19 +31,19 @@ namespace WebFramework.API
         where TUpdateDto : BaseDto<TUpdateDto, TEntity, TKey>, new()
         where TEntity : class, IEntity, new()
     {
-        private readonly IRepository<TEntity> _repository;
-        private readonly IMapper _mapper;
+        protected readonly IRepository<TEntity> repository;
+        protected readonly IMapper mapper;
 
         public CrudController(IRepository<TEntity> repository, IMapper mapper)
         {
-            _repository = repository;
-            this._mapper = mapper;
+            this.repository = repository;
+            this.mapper = mapper;
         }
 
         [HttpGet]
         public virtual async Task<ActionResult<ApiResult<List<TReadDto>>>> Get(CancellationToken cancellationToken)
         {
-            var list = await _repository.TableNoTracking.ProjectTo<TReadDto>(_mapper.ConfigurationProvider)
+            var list = await repository.TableNoTracking.ProjectTo<TReadDto>(mapper.ConfigurationProvider)
                             .ToListAsync(cancellationToken);
 
             return Ok(new ApiResult<List<TReadDto>>()
@@ -54,7 +53,7 @@ namespace WebFramework.API
         [HttpGet("{id}")]
         public virtual async Task<ActionResult<ApiResult<TReadDto>>> Get(TKey id, CancellationToken cancellationToken)
         {
-            var dto = await _repository.TableNoTracking.ProjectTo<TReadDto>(_mapper.ConfigurationProvider)
+            var dto = await repository.TableNoTracking.ProjectTo<TReadDto>(mapper.ConfigurationProvider)
                             .FirstOrDefaultAsync(p => p.Id.Equals(id), cancellationToken);
 
             if (dto is null)
@@ -67,11 +66,13 @@ namespace WebFramework.API
         [HttpPost]
         public virtual async Task<ActionResult<ApiResult<TReadDto>>> Create(TCreateDto dto, CancellationToken cancellationToken)
         {
-            var model = _mapper.Map<TEntity>(dto);
+            var model = mapper.Map<TEntity>(dto);
 
-            await _repository.AddAsync(model, cancellationToken);
+            await repository.AddAsync(model, cancellationToken);
 
-            var resultDto = _mapper.Map<TReadDto>(model);
+            var resultDto = mapper.Map<TReadDto>(model);
+            resultDto = await repository.TableNoTracking.ProjectTo<TReadDto>(mapper.ConfigurationProvider)
+                                        .FirstOrDefaultAsync(o => o.Id.Equals(resultDto.Id), cancellationToken);
 
             return Ok(new ApiResult<TReadDto>()
                             .WithData(resultDto));
@@ -80,16 +81,17 @@ namespace WebFramework.API
         [HttpPut("{id}")]
         public virtual async Task<ActionResult<ApiResult<TReadDto>>> Update(TKey id, TUpdateDto dto, CancellationToken cancellationToken)
         {
-            var model = await _repository.GetByIdAsync(cancellationToken, id);
+            var model = await repository.GetByIdAsync(cancellationToken, id);
 
             if (model is null)
                 return NotFound(new ApiResult(false));
 
-            model = _mapper.Map(dto, model);
+            model = mapper.Map(dto, model);
 
-            await _repository.UpdateAsync(model, cancellationToken);
+            await repository.UpdateAsync(model, cancellationToken);
 
-            var resultDto = _mapper.Map<TReadDto>(model);
+            var resultDto = await repository.TableNoTracking.ProjectTo<TReadDto>(mapper.ConfigurationProvider)
+                                        .FirstOrDefaultAsync(o => o.Id.Equals(id), cancellationToken);
 
             return Ok(new ApiResult<TReadDto>()
                             .WithData(resultDto));
@@ -98,12 +100,12 @@ namespace WebFramework.API
         [HttpDelete("{id}")]
         public virtual async Task<ActionResult<ApiResult>> Delete(TKey id, CancellationToken cancellationToken)
         {
-            var model = await _repository.GetByIdAsync(cancellationToken, id);
+            var model = await repository.GetByIdAsync(cancellationToken, id);
 
             if (model is null)
                 return NotFound();
 
-            await _repository.DeleteAsync(model, cancellationToken);
+            await repository.DeleteAsync(model, cancellationToken);
 
             return Ok();
         }
@@ -113,9 +115,7 @@ namespace WebFramework.API
     /// A generic CRUD controller.
     /// </summary>
     /// <remarks>
-    /// Don't use it for entities with Foreign Keys 
-    /// or override and handle <see cref="CrudController{TCreateDto, TReadDto, TUpdateDto, TEntity, TKey}.Create(TCreateDto, CancellationToken)"/> and
-    /// <see cref="CrudController{TCreateDto, TReadDto, TUpdateDto, TEntity, TKey}.Update(TKey, TUpdateDto, CancellationToken)"/> actions.
+    /// Don't use it for entities with Foreign Keys or override and handle actions if it is required.
     /// </remarks>
     /// <typeparam name="TCreateDto">The DTO for creating entity.</typeparam>
     /// <typeparam name="TReadDto">The DTO for reading entity.</typeparam>
@@ -136,9 +136,7 @@ namespace WebFramework.API
     /// A generic CRUD controller.
     /// </summary>
     /// <remarks>
-    /// Don't use it for entities with Foreign Keys 
-    /// or override and handle <see cref="CrudController{TCreateDto, TReadDto, TUpdateDto, TEntity, TKey}.Create(TCreateDto, CancellationToken)"/> and
-    /// <see cref="CrudController{TCreateDto, TReadDto, TUpdateDto, TEntity, TKey}.Update(TKey, TUpdateDto, CancellationToken)"/> actions.
+    /// Don't use it for entities with Foreign Keys or override and handle actions if it is required.
     /// </remarks>
     /// <typeparam name="TCreateAndUpdateDto">The DTO for creating and updating entity.</typeparam>
     /// <typeparam name="TReadDto">The DTO for reading entity.</typeparam>

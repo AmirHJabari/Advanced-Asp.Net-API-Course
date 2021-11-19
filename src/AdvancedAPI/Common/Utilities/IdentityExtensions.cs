@@ -15,7 +15,7 @@ namespace Common
             return identity?.FindFirst(claimType)?.Value;
         }
 
-        public static ApiResultStatusCode GetStatusCode(this IdentityResult result)
+        public static ApiResultStatusCode GetApiResultCode(this IdentityResult result)
         {
             ApiResultStatusCode code = ApiResultStatusCode.None;
             

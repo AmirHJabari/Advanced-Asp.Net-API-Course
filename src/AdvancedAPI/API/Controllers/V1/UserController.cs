@@ -79,16 +79,12 @@ namespace API.Controllers.V1
 
             if (!result.Succeeded)
             {
-                var code = result.GetStatusCode();
-                string message = result.GetErrorMessages();
+                //var code = result.GetApiResultCode();
+                //string message = result.GetErrorMessages();
 
-                return BadRequest(
-                    new ApiResult(result.Succeeded)
-                        .WithMessage(message)
-                        .WithCode(code)
-                        //.WithCode(ApiResultStatusCode.InvalidInputs)
-                        //.WithData(result.Errors)
-                );
+                return BadRequest(new ApiResult<IEnumerable<IdentityError>>(false)
+                                            .WithCode(ApiResultStatusCode.InvalidInputs)
+                                            .WithData(result.Errors));
             }
 
             var res = new ApiResult<object>()
@@ -110,15 +106,10 @@ namespace API.Controllers.V1
 
             if (!result.Succeeded)
             {
-                var code = result.GetStatusCode();
-                string message = result.GetErrorMessages();
-
                 return BadRequest(
-                    new ApiResult(result.Succeeded)
-                        .WithMessage(message)
-                        .WithCode(code)
-                        //.WithCode(ApiResultStatusCode.InvalidInputs)
-                        //.WithData(result.Errors)
+                    new ApiResult<IEnumerable<IdentityError>>(false)
+                        .WithCode(ApiResultStatusCode.InvalidInputs)
+                        .WithData(result.Errors)
                 );
             }
 
