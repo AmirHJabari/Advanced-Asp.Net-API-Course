@@ -23,12 +23,9 @@ using WebFramework.DTOs;
 using WebFramework.Filters;
 using WebFramework.Filters.Validations.Users;
 
-namespace API.Controllers
+namespace API.Controllers.V1
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [ApiResultFilter]
-    public class UserController : ControllerBase
+    public class UserController : BaseApiController
     {
         private IUserRepository _userRepository;
         private readonly IJwtServices _jwtServices;

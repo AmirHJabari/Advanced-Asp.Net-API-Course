@@ -29,8 +29,10 @@ namespace WebFramework.DTOs
         [StringLength(50)]
         public string LastName { get; set; }
 
+        [Required]
         [Range(1, 150)]
         public int Age { get; set; }
+        [Required]
         public Gender Gender { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

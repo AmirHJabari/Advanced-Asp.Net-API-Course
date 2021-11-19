@@ -25,6 +25,8 @@ using Common;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
+using WebFramework.Mapping;
+using WebFramework.DTOs;
 
 namespace API
 {
@@ -45,7 +47,7 @@ namespace API
             services.AddApplicationDbContext(Configuration);
             services.AddMinimalControllers();
 
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.InitializeAutoMapper(typeof(WebFramework.AssemblyClass).Assembly, typeof(Program).Assembly);
 
             //services.AddSwaggerGen(c =>
             //{
@@ -54,6 +56,7 @@ namespace API
             services.AddCustomElmah(_settings.ElamahPath, Configuration);
 
             services.AddSingleton(this._settings);
+            services.AddCustomApiVersioning();
 
             services.AddCustomIdentity(_settings.Identity);
             services.AddJwtAuthentication(_settings.Jwt);

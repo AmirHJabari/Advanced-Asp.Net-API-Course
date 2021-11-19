@@ -211,5 +211,15 @@ namespace WebFramework.Configuration
 
             return services;
         }
+
+        public static IServiceCollection AddCustomApiVersioning(this IServiceCollection services)
+        {
+            services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+            });
+            return services;
+        }
     }
 }
