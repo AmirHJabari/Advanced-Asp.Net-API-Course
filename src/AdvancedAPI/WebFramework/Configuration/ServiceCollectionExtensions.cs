@@ -22,6 +22,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using ElmahCore.Mvc;
 using ElmahCore.Sql;
+using Microsoft.AspNetCore.Builder;
+using Services.SeedData;
 
 namespace WebFramework.Configuration
 {
@@ -220,6 +222,20 @@ namespace WebFramework.Configuration
                 options.ReportApiVersions = true;
             });
             return services;
+        }
+
+        public static IApplicationBuilder SeedData(this IApplicationBuilder app)
+        {
+            using var scope = app.ApplicationServices.CreateScope();
+            var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
+            dbContext.Database.Migrate();
+
+            var seeds = scope.ServiceProvider.GetServices<ISeedData>();
+
+            foreach (var seed in seeds)
+                seed.InitializeData();
+
+            return app;
         }
     }
 }

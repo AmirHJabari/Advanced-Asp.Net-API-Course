@@ -13,6 +13,7 @@ namespace Entities
     public class User : IdentityUser<int>, IEntity
     {
         public User()
+            : base()
         {
             this.LoginDate = DateTimeOffset.UtcNow;
             this.LastActivityDate = DateTimeOffset.UtcNow;
