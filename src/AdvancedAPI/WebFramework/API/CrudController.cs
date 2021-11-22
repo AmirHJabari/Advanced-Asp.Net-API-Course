@@ -25,6 +25,7 @@ namespace WebFramework.API
     /// <typeparam name="TUpdateDto">The DTO for updating entity.</typeparam>
     /// <typeparam name="TEntity">The entity class.</typeparam>
     /// <typeparam name="TKey">The key of <see cref="TEntity"/>.</typeparam>
+    [ApiVersion("1")]
     public class CrudController<TCreateDto, TReadDto, TUpdateDto, TEntity, TKey> : BaseApiController
         where TCreateDto : BaseDto<TCreateDto, TEntity, TKey>, new()
         where TReadDto : BaseReadDto<TReadDto, TEntity, TKey>, new()

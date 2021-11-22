@@ -13,28 +13,30 @@ using AutoMapper.QueryableExtensions;
 using AutoMapper;
 using WebFramework.DTOs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace WebFramework.Filters.Validations.Users
 {
     /// <summary>
     /// Using <see cref="IUserRepository"/> in <see cref="IServiceProvider"/> gets user by given id,
     /// if not exist returns not found to client.
-    /// if exist fills the user argument in the action.
+    /// if exist saves the user in <see cref="HttpContext.Items"/> with key of <see cref="ItemKey"/>.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class TryGetUserByIdValidationAttribute : ActionFilterAttribute
     {
         /// <summary>
-        /// The name of the action argument to get user id.
+        /// The name of the action argument to get user id. Default 'id'
         /// </summary>
         public string UserIdArgumentName { get; set; } = "id";
 
         /// <summary>
-        /// The name of the action argument to pass the user.
+        /// The key to pass the user by <see cref="HttpContext.Items"/>. Default 'user'
         /// </summary>
-        public string UserArgumentName { get; set; } = "user";
+        public string ItemKey { get; set; } = "user";
 
         /// <summary>
-        /// If true Initializes the user argument of action using <see cref="UserArgumentName"/> as <see cref="UserReadDto"/>.
+        /// If true saves the user using <see cref="ItemKey"/> as <see cref="UserReadDto"/>.
         /// <see cref="User"/> otherwise.
         /// </summary>
         public bool GetAsUserReadDto { get; set; } = false;
@@ -67,8 +69,9 @@ namespace WebFramework.Filters.Validations.Users
 
                 context.Result = new NotFoundObjectResult(notFoundRes);
             }
+            
+            context.HttpContext.Items[ItemKey] = user;
 
-            context.ActionArguments[UserArgumentName] = user;
 
             await base.OnActionExecutionAsync(context, next);
         }

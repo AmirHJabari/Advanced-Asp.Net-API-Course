@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using API.Models;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Common;
 using Common.Utilities;
@@ -25,6 +26,7 @@ using WebFramework.Filters.Validations.Users;
 
 namespace API.Controllers.V1
 {
+    [ApiVersion("1")]
     public class UserController : BaseApiController
     {
         private IUserRepository _userRepository;
@@ -45,9 +47,9 @@ namespace API.Controllers.V1
             this._roleManager = roleManager;
             this._mapper = mapper;
         }
-        
+
         [HttpGet]
-        public async Task<ActionResult<ApiResult<IEnumerable<UserReadDto>>>> Get(CancellationToken cancellationToken)
+        public virtual async Task<ActionResult<ApiResult<IEnumerable<UserReadDto>>>> Get(CancellationToken cancellationToken)
         {
             var users = await _userRepository.TableNoTracking.ProjectTo<UserReadDto>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
@@ -57,24 +59,25 @@ namespace API.Controllers.V1
         }
 
         [HttpGet("{id:int}")]
-        [TryGetUserByIdValidation(GetAsUserReadDto = true, UserArgumentName = "userDto")]
+        [TryGetUserByIdValidation(GetAsUserReadDto = true, ItemKey = "userDto")]
         // [Authorize(Roles = "Forbidden")] // for test
-        public ActionResult<ApiResult<User>> Get(int id,
-            [BindNever] UserReadDto userDto)
+        public virtual ActionResult<ApiResult<User>> Get(int id)
         {
+            UserReadDto userDto = HttpContext.Items[nameof(userDto)] as UserReadDto;
+
             var res = new ApiResult<UserReadDto>()
                 .WithData(userDto);
-            
+
             return Ok(res);
         }
 
         [HttpPost]
         //[UserNameIsExistValidation]
-        public async Task<ActionResult<ApiResult>> Post([FromBody] UserCreateDto userDto,
+        public virtual async Task<ActionResult<ApiResult>> Post([FromBody] UserCreateDto userDto,
             CancellationToken cancellationToken)
         {
             var user = _mapper.Map<User>(userDto);
-            
+
             var result = await _userManager.CreateAsync(user, userDto.Password);
 
             if (!result.Succeeded)
@@ -96,10 +99,11 @@ namespace API.Controllers.V1
         [HttpPut("{id:int}")]
         // [UserNameIsExistValidation]
         [TryGetUserByIdValidation]
-        public async Task<ActionResult<ApiResult>> Put(int id,
-            UserUpdateDto userDto,
-            [FromRoute][BindNever] User user)
+        public virtual async Task<ActionResult<ApiResult>> Put(int id,
+            UserUpdateDto userDto)
         {
+            User user = HttpContext.Items[nameof(user)] as User;
+
             _mapper.Map(userDto, user);
 
             var result = await _userManager.UpdateAsync(user);
@@ -120,28 +124,30 @@ namespace API.Controllers.V1
         [HttpDelete("{id:int}")]
         [TryGetUserByIdValidation]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult<ApiResult>> Delete(int id, CancellationToken cancellationToken,
-            [BindNever] User user)
+        public virtual async Task<ActionResult<ApiResult<UserReadDto>>> Delete(int id,
+            CancellationToken cancellationToken)
         {
-            await _userRepository.DeleteAsync(user, cancellationToken);
+            User user = HttpContext.Items[nameof(user)] as User;
 
-            var res = new ApiResult<User>()
-                .WithData(user);
+            await _userRepository.DeleteAsync(user, cancellationToken);
+            var userDto = _mapper.Map<UserReadDto>(user);
+            var res = new ApiResult<UserReadDto>()
+                .WithData(userDto);
 
             return Ok(res);
         }
 
-        [HttpGet("[action]")]
-        public async Task<ActionResult<ApiResult>> Token([Required] string username, [Required] string password)
+        [HttpPost("[action]")]
+        public virtual async Task<ActionResult<ApiResult<string>>> Token([Required] TokenRequest tokenRequest)
         {
-            User user = await _userManager.FindByNameAsync(username);
+            User user = await _userManager.FindByNameAsync(tokenRequest.UserName);
 
-            if (user is null || !(await _userManager.CheckPasswordAsync(user, password)))
+            if (user is null || !(await _userManager.CheckPasswordAsync(user, tokenRequest.Password)))
                 return Unauthorized(new ApiResult(false, "UserName or password is invalid.", ApiResultStatusCode.WrongUserNameOrPassword));
             else
             {
-                return Ok(new ApiResult<object>()
-                    .WithData(new { Token = await _jwtServices.GenerateAsync(user) }));
+                return Ok(new ApiResult<string>()
+                    .WithData(await _jwtServices.GenerateAsync(user)));
             }
         }
     }

@@ -11,6 +11,7 @@ using AutoMapper;
 
 namespace API.Controllers.V1
 {
+    [ApiVersion("1")]
     public class CategoryController : CrudController<CategoryDto, CategoryReadDto, Category>
     {
         public CategoryController(IRepository<Category> repository, IMapper mapper) 

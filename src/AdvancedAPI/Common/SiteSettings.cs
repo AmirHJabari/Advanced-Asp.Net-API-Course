@@ -9,7 +9,7 @@ namespace Common
 {
     public class SiteSettings
     {
-        public string ElamahPath { get; set; }
+        public string ElmahPath { get; set; }
 
         public JwtSettings Jwt { get; set; }
 

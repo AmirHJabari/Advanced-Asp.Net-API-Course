@@ -27,6 +27,8 @@ using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using WebFramework.Mapping;
 using WebFramework.DTOs;
+using WebFramework.Swagger;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace API
 {
@@ -49,11 +51,9 @@ namespace API
 
             services.InitializeAutoMapper(typeof(WebFramework.AssemblyClass).Assembly, typeof(Program).Assembly);
 
-            //services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
-            //});
-            services.AddCustomElmah(_settings.ElamahPath, Configuration);
+            services.AddSwagger();
+
+            services.AddCustomElmah(_settings.ElmahPath, Configuration);
 
             services.AddSingleton(this._settings);
             services.AddCustomApiVersioning();
@@ -80,8 +80,7 @@ namespace API
             if (env.IsDevelopment())
             {
                 //app.UseDeveloperExceptionPage();
-                //app.UseSwagger();
-                //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
+                app.UseSwaggerAndSwaggerUI();
             }
 
             app.UseRouting();

@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers.V1
 {
+    [ApiVersion("1")]
     public class RoleController : CrudController<RoleDto, RoleReadDto, Entities.Role>
     {
         private readonly RoleManager<Role> _roleManager;
